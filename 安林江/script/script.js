@@ -1,249 +1,232 @@
-/*jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true, undef:true, unused:false, curly:true, browser:true, devel:true, jquery:true, es5:true, indent:4, maxerr:50 */
+/*jshint browser:true, jquery:true, devel:true */
 /*global impress */
-(function($,undefined){
+(function ($) {
 	'use strict';
 
-	var ie = (navigator.appVersion.indexOf("MSIE") !== -1) ? parseFloat(navigator.appVersion.split("MSIE")[1]) : 99;
+	// 检测 IE 版本（兼容老代码保留，仅用于决定是否启用 impress.js）
+	var ieVersion = (navigator.appVersion.indexOf('MSIE') !== -1)
+		? parseFloat(navigator.appVersion.split('MSIE')[1])
+		: 99;
 
-	$(function(){
-		
+	$(function () {
+
+		// 移除 loading 遮罩
 		$('body').removeClass('preload');
 
-		if(ie > 10) {
-			try{
+		// ---------- impress.js 初始化 ----------
+		if (ieVersion > 10 && typeof impress === 'function') {
+			try {
 				var imprs = impress();
 				imprs.init();
-				document.addEventListener('impress:stepenter',function(e){
+				document.addEventListener('impress:stepenter', function (e) {
 					var fn = e.target.id + 'PageAnimate';
-					if(window[fn]){
+					if (typeof window[fn] === 'function') {
 						window[fn]();
 					}
 				});
-			}catch(e){
-				console.log(e);
+			} catch (err) {
+				console.log(err);
 			}
 		}
 
-		//Portfolio
-		$("a.dwn-vcard").click(function(){
+		// 禁用"打开邮箱"按钮默认跳转（如需改动在此处理）
+		$('a.dwn-vcard').on('click', function () {
 			return false;
 		});
 
-		$('#cat_01').click(function(){
-			$('#portfolio-list').removeClass().addClass('cat_01');
-		});
-		$('#cat_02').click(function(){
-			$('#portfolio-list').removeClass().addClass('cat_02');
-		});
-		$('#cat_03').click(function(){
-			$('#portfolio-list').removeClass().addClass('cat_03');
-		});
-		$('#cat_04').click(function(){
-			$('#portfolio-list').removeClass().addClass('cat_04');
-		});
-		$('#all1').click(function(){
-			$('#portfolio-list').removeClass().addClass('all');
-		});
-		$('#cat_05').click(function(){
-			$('#portfolio-list2').removeClass().addClass('cat_05');
-		});
-		$('#cat_06').click(function(){
-			$('#portfolio-list2').removeClass().addClass('cat_06');
-		});
-		$('#cat_07').click(function(){
-			$('#portfolio-list2').removeClass().addClass('cat_07');
-		});
-		$('#all2').click(function(){
-			$('#portfolio-list2').removeClass().addClass('all');
+		// ---------- 作品集分类过滤（事件委托 + 合并重复代码）----------
+		// 只要 <li> 有 id="cat_xx" 或 id="all1/all2" 就会被这里处理
+		$('section.portfolio_container ul.filter').on('click', 'li', function () {
+			var $li = $(this);
+			var id = $li.attr('id');
+			if (!id) { return; }
+
+			// 切换 active 状态（原来每组 filter 分开做，这里统一处理）
+			$li.siblings().removeClass('active');
+			$li.addClass('active');
+
+			// 根据 id 决定改的是哪个列表：all1/cat_0[1-4] -> #portfolio-list
+			//                           all2/cat_0[5-7] -> #portfolio-list2
+			var targetSelector;
+			var className;
+			if (id === 'all1') {
+				targetSelector = '#portfolio-list';
+				className = 'all';
+			} else if (id === 'all2') {
+				targetSelector = '#portfolio-list2';
+				className = 'all';
+			} else if (/^cat_0[1-4]$/.test(id)) {
+				targetSelector = '#portfolio-list';
+				className = id;
+			} else if (/^cat_0[5-7]$/.test(id)) {
+				targetSelector = '#portfolio-list2';
+				className = id;
+			} else {
+				return;
+			}
+
+			$(targetSelector)
+				.removeClass('all cat_01 cat_02 cat_03 cat_04 cat_05 cat_06 cat_07')
+				.addClass(className);
 		});
 
-		// for Skill Graph Animate
-		var graph_height = $('.graph-skill').height(),
-			$graph_bars = $(".graph-skill li");
-		
-		$graph_bars.each(function(){
-			var $this = $(this),
-				$elm = $this.children("span.bar-title"),
-				val = parseFloat($elm.text());
+		// ---------- 技能条形图动画 ----------
+		var graphHeight = $('.graph-skill').height();
+		var $graphBars = $('.graph-skill li');
 
-			val = (!val || val<1)  ? 1 :
-				val>100 ? 100 : val;
+		$graphBars.each(function () {
+			var $this = $(this);
+			var $title = $this.children('span.bar-title');
+			var val = parseFloat($title.text());
 
-			$this
-				.css({
-					'margin-top': graph_height*(100-val)/100,
-					height: graph_height*val/100+'px'
-				})
-				.data('percentValue', val);
+			// 限定 1~100
+			val = (!val || val < 1) ? 1 : (val > 100 ? 100 : val);
 
-			$elm.html(val+"%");
+			$this.css({
+				'margin-top': graphHeight * (100 - val) / 100,
+				height: graphHeight * val / 100 + 'px'
+			}).data('percentValue', val);
+
+			$title.html(val + '%');
 		});
 
-		// Custom page animations
-
-		var resumePageAnimate = function(){
-			var dly=1;
-			$graph_bars.each(function(){
-				var $this=$(this),
-					val = $this.data('percentValue'),
-					scl = 0.2;
-				$this
-					.delay(dly)
+		// 进入 resume 页时触发的动画（impress.js 会按 id 找 xxxPageAnimate）
+		window.resumePageAnimate = function () {
+			var delay = 1;
+			$graphBars.each(function () {
+				var $bar = $(this);
+				var val = $bar.data('percentValue');
+				var scale = 0.2;
+				$bar
+					.delay(delay)
 					.animate({
-						'margin-top': graph_height*(100-(val*scl))/100,
-						height: graph_height*val*scl/100+'px'
-					},200,'swing')
+						'margin-top': graphHeight * (100 - (val * scale)) / 100,
+						height: graphHeight * val * scale / 100 + 'px'
+					}, 200, 'swing')
 					.animate({
-						'margin-top': graph_height*(100-val)/100,
-						height: graph_height*val/100+'px'
-					},300, 'swing');
-				dly+=120;
+						'margin-top': graphHeight * (100 - val) / 100,
+						height: graphHeight * val / 100 + 'px'
+					}, 300, 'swing');
+				delay += 120;
 			});
 		};
 
-		
-		// ColorBox
-		$(".port_group").colorbox({
-			rel:'port_group',
-			transition:"fade",
-			scrolling:false,
-			returnFocus:false,
-			maxHeight:window.innerHeight-50,
-			maxWidth:window.innerWidth-50,
-		});
-
-
-		// placeholders
-		$('div.lblplaceholder input, div.lblplaceholder textarea').focus(function(){
-			var id = $(this).attr('data-lbl');
-			$('label#'+ id).css({
-				'visibility':'hidden'
+		// ---------- ColorBox 图片灯箱 ----------
+		if ($.fn.colorbox) {
+			$('.port_group').colorbox({
+				rel: 'port_group',
+				transition: 'fade',
+				scrolling: false,
+				returnFocus: false,
+				maxHeight: window.innerHeight - 50,
+				maxWidth: window.innerWidth - 50
 			});
+		}
+
+		// ---------- 自定义 placeholder 行为（使用事件委托）----------
+		var $placeholders = $('div.lblplaceholder');
+		$placeholders.on('focus', 'input, textarea', function () {
+			var id = $(this).attr('data-lbl');
+			$('label#' + id).css('visibility', 'hidden');
 		});
-		$('div.lblplaceholder input, div.lblplaceholder textarea').blur(function(){
-			if(!$(this).val()){
+		$placeholders.on('blur', 'input, textarea', function () {
+			if (!$(this).val()) {
 				var id = $(this).attr('data-lbl');
-				$('label#'+ id).css({
-					'visibility':'visible'
-				});
+				$('label#' + id).css('visibility', 'visible');
 			}
 		});
-		$('div.lblplaceholder label').click(function(){
-			$('div.lblplaceholder label').css({'visibility':'visible'});
-			$("div.lblplaceholder input[data-lbl='"+ $(this).attr('data-id') +"']").focus();
-			$("div.lblplaceholder textarea[data-lbl='"+ $(this).attr('data-id') +"']").focus();
-			$(this).css({
-				'visibility':'hidden'
-			});
+		$placeholders.on('click', 'label', function () {
+			var $label = $(this);
+			var dataId = $label.attr('data-id');
+			$placeholders.find('label').css('visibility', 'visible');
+			$placeholders.find("input[data-lbl='" + dataId + "'], textarea[data-lbl='" + dataId + "']").focus();
+			$label.css('visibility', 'hidden');
 		});
 
-		// Portfolio li
-		var ul_filter_li =
-		$('section.portfolio_container ul.filter li').click(function(){
-			ul_filter_li.removeClass('active');
-			$(this).addClass('active');
-		});
-
-
-		// Skin Choose Panel
-		$('div.skin-selector a#toggle-panel').click(function(){
+		// ---------- 皮肤切换面板 ----------
+		$('div.skin-selector a#toggle-panel').on('click', function (e) {
+			e.preventDefault();
 			$('div.skin-selector').toggleClass('openpanel');
-			return false;
 		});
+
+		// 关键 Bug 修复：原代码里 `backgrlound` 拼写错误导致背景切换无法清除旧 class
 		var bodyClass = {
-			backgrlound:false,
-			forground:false,
-			forecolor:false
+			background: false,   // 背景图 / 纯色背景
+			foreground: false,   // 文字背景（fg-xxx）
+			foreColor: false     // 文字颜色（fc-xxx）
 		};
-		$('div.pattern-bg ul li,div.color-bg ul li').click(function(){
-			if(bodyClass.background){
+
+		$('div.pattern-bg ul li, div.color-bg ul li').on('click', function () {
+			if (bodyClass.background) {
 				$('body').removeClass(bodyClass.background);
 			}
 			bodyClass.background = $(this).attr('class');
 			$('body').addClass(bodyClass.background);
 		});
-		$('div.style-color ul li').click(function(){
-			if(bodyClass.forground){
-				$('body').removeClass(bodyClass.forground);
+
+		$('div.style-color ul li').on('click', function () {
+			if (bodyClass.foreground) {
+				$('body').removeClass(bodyClass.foreground);
 			}
-			bodyClass.forground = 'fg-'+$(this).attr('class');
-			$('body').addClass(bodyClass.forground);
-		});
-		$('div.font-color ul li').click(function(){
-			if(bodyClass.forecolor){
-				$('span.h1-text').removeClass(bodyClass.forecolor);
-			}
-			bodyClass.forecolor = 'fc-'+$(this).attr('class');
-			$('span.h1-text').addClass(bodyClass.forecolor);
+			bodyClass.foreground = 'fg-' + $(this).attr('class');
+			$('body').addClass(bodyClass.foreground);
 		});
 
-		//IMG hover
-		$('.dwn-vcard').mouseover(function(){
+		$('div.font-color ul li').on('click', function () {
+			if (bodyClass.foreColor) {
+				$('span.h1-text').removeClass(bodyClass.foreColor);
+			}
+			bodyClass.foreColor = 'fc-' + $(this).attr('class');
+			$('span.h1-text').addClass(bodyClass.foreColor);
+		});
+
+		// ---------- 头像悬停 → 显示二维码 ----------
+		$('.dwn-vcard').on('mouseenter', function () {
 			$('.me').addClass('hover');
-		}).mouseout(function(){
+		}).on('mouseleave', function () {
 			$('.me').removeClass('hover');
 		});
 
-		// for Animate Main Menu
-
-		$('nav.mainmenu ul > li').mouseover(function(){
-			$(this).stop().animate({
-				'right':'0px'
-			},100);
-		}).mouseout(function(){
-			$(this).stop().animate({
-				'right':'-140px'
-			},400);
+		// ---------- 主菜单悬停展开 ----------
+		$('nav.mainmenu ul > li').on('mouseenter', function () {
+			$(this).stop().animate({ right: '0px' }, 100);
+		}).on('mouseleave', function () {
+			$(this).stop().animate({ right: '-140px' }, 400);
 		});
 
-		// Contact Form Validators
-		var
-		emailPattern = /^[a-z0-9+_%.\-]+@(?:[a-z0-9\-]+\.)+[a-z]{2,6}$/i,
-		validateText = function (str,len){
-			return str.length >= len;
-		},
-		validateEmail = function (str){
-			return emailPattern.test(str);
-		},
-		updateAjax = function(){
-			// Contact form
-			$('#contact-form').submit(function(){
-				var target=$('#name'), err = false;
+		// ---------- 联系表单校验 ----------
+		var emailPattern = /^[a-z0-9+_%.\-]+@(?:[a-z0-9\-]+\.)+[a-z]{2,6}$/i;
 
-				target = $('#name');
-				if( validateText(target.val(),3) ){
-					target.removeClass('err').addClass('ok');
-				}else{
-					target.removeClass('ok').addClass('err');
-					err = true;
-				}
-
-				target = $('#mail');
-				if( validateEmail(target.val()) ){
-					target.removeClass('err').addClass('ok');
-				}else{
-					target.removeClass('ok').addClass('err');
-					err = true;
-				}
-
-				target = $('#msg');
-				if( validateText(target.val(),10) ){
-					target.removeClass('err').addClass('ok');
-				}else{
-					target.removeClass('ok').addClass('err');
-					err = true;
-				}
-
-				if(!err){
-					$('#ifrm').animate({
-						height:'70px'
-					},700);
-				}
-
-				return !err;
-			});
+		var validateText = function (str, len) {
+			return typeof str === 'string' && str.length >= len;
 		};
-		updateAjax();
+		var validateEmail = function (str) {
+			return emailPattern.test(str);
+		};
+
+		$('#contact-form').on('submit', function () {
+			var hasError = false;
+
+			var checkField = function (selector, validator) {
+				var $target = $(selector);
+				if (validator($target.val())) {
+					$target.removeClass('err').addClass('ok');
+				} else {
+					$target.removeClass('ok').addClass('err');
+					hasError = true;
+				}
+			};
+
+			checkField('#name', function (v) { return validateText(v, 3); });
+			checkField('#mail', validateEmail);
+			checkField('#msg',  function (v) { return validateText(v, 10); });
+
+			if (!hasError) {
+				$('#ifrm').animate({ height: '70px' }, 700);
+			}
+			return !hasError;
+		});
+
 	});
 
 })(jQuery);

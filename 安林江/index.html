@@ -1,17 +1,20 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
 <head>
 	<meta charset="UTF-8" />
-	<title>秋岛诗诺</title>
-	<meta name="viewport" content="width=600" />
+	<title>秋岛诗诺 - 安林江的个人主页</title>
+	<meta name="description" content="安林江的个人作品集 - 前端 / 视觉 / 动画" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 	<meta name="format-detection" content="telephone=no" />
-	<link href='http://fonts.googleapis.com/css?family=Ubuntu:300,700' rel='stylesheet' type='text/css' />
+	<link href="https://fonts.googleapis.com/css?family=Ubuntu:300,700" rel="stylesheet" type="text/css" />
 	<link rel="stylesheet" type="text/css" href="style.css" />
 	<link rel="apple-touch-icon" href="apple-touch-icon.png" />
-	<link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png" />
-	<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.3/example1/colorbox.css" />
-	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.6.2/html5shiv.js"></script>
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.3/example1/colorbox.css" />
+	<!--[if lt IE 9]>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+	<![endif]-->
 </head>
 <body class="preload impress-not-supported">
 	<div class="loading-panel">
@@ -211,7 +214,7 @@
 				</li>
 				<!-- ae -->
 				<li class="cat_03">
-					<video width="200" controls  href="video/中二病也要谈恋爱.MP4">
+					<video width="200" controls>
 						<source src="video/中二病也要谈恋爱.MP4" type="video/mp4">
 					</video>
 				</li>
@@ -231,7 +234,7 @@
 				</li>
 				<!-- ae -->
 				<li class="cat_03">
-					<video width="200" controls  href="video/中二病也要谈恋爱.MP4">
+					<video width="200" controls>
 						<source src="video/中二病也要谈恋爱.MP4" type="video/mp4">
 					</video>
 				</li>
@@ -249,16 +252,16 @@
 		<section class="contact_container cover step" id="contact" data-x="-1600" data-y="-600" data-z="-4700" data-rotate-z="10" data-rotate-y="180">
 			<h1 class="cover"><span class="h1-text fg-bgc">留言</span></h1>
 			<div class="map left">
-				<P><iframe src="map.html"></iframe></P>
+				<iframe src="map.html" title="地图"></iframe>
 			</div>
 			<div class="form">
-				<form action="sendmail.php" class="right" id="contact-form" method="post" target='ifrm'>
+				<form action="sendmail.php" class="right" id="contact-form" method="post" target="ifrm">
 					<input id="name" placeholder="名字" type="text" name="name" title="Your Name" />
 					<input id="mail" placeholder="邮箱" type="text" name="mail" title="Your E-mail Address" />
 					<textarea id="msg" placeholder="内容" name="msg" cols="40" rows="10" title="The Text Sent to Me"></textarea>
-					<input type="submit" value="发送" name="submit" class="fg-bgc " /></span>
+					<input type="submit" value="发送" name="submit" class="fg-bgc" />
 				</form>
-				<iframe id='ifrm' name='ifrm'></iframe>
+				<iframe id="ifrm" name="ifrm" title="发送结果"></iframe>
 				<div class="contact-info right">
 					<p id="e-mail">3237246015@qq.com</p>
 					<p id="phone">15285971002</p>
@@ -276,9 +279,6 @@
 						<p></p>
 					</li>
 				</ul>
-			</section>
-			
-			
 			</section>
 		</section>
 	</div>
@@ -384,11 +384,11 @@
 		</div>
 	</div>
 	<!-- script -->
-	<script type="text/javascript" src="script/jquery.min.js"></script>
+	<script src="script/jquery.min.js"></script>
 	<!--[if !IE]><!-->
-		<script type="text/javascript" src="script/impress.js"></script>
+		<script src="script/impress.js"></script>
 	<!--<![endif]-->
-	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.3/jquery.colorbox-min.js"></script>
-	<script type="text/javascript" src="script/script.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.3/jquery.colorbox-min.js"></script>
+	<script src="script/script.js"></script>
 </body>
 </html>
